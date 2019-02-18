@@ -1,150 +1,136 @@
 class LinkedList
-	require "./node.rb"
+  attr_reader :size, :head, :tail
+  def initialize
+    @tail = nil
+    @size = 0
+    @head = nil
+  end
 
-	def initialize()
-		@head = Node.new
-		@tail = Node.new
-		@head.next_node = @tail
-	end
-	#append adds a new node to the end of the list
-	def append(value)
-		if @tail.value == nil
-			@tail.value = value
-		else
-			node = Node.new
-			node.value = value
-			@tail.next_node = node
-			@tail = node 
-		end
-	end
-	#prepend adds a new node to the start of the list
-	def prepend(value)
-		if @head.value == nil
-			@head.value = value
-		else
-			node = Node.new
-			node.value = value
-			node.next_node = @head
-			@head = node 
-		end
-	end
-	#size returns the total number of nodes in the list
-	def size
-		count = 0
-		first = @head
-		while first.next_node != nil
-			count = count + 1
-			first = first.next_node
-		end
-		count + 1
-	end
-	#head returns the first node in the list
-	def head
-		@head		
-	end
-	#tail returns the last node in the list
-	def tail
-		@tail		
-	end
-	#at(index) returns the node at the given index
-	def at(indexPos)
-		if size >= indexPos + 1
-			first = @head
-			indexPos.times do
-				first = first.next_node
-			end
-			first
-		end	
-	end
-	#pop removes the last element from the list
-	def pop	
-		if size > 1
-			previous_node = at(size - 2)
-			@tail = previous_node
-			@tail.next_node = nil
-		end	
-	end
-	#contains? returns true if the passed in value is in the list and otherwise returns false.
-	def contains?(value)
-		first = @head
-		contained = false
-		size.times do
-			if first.value === value
-			 contained = true
-			end
-			first = first.next_node
-		end
-		contained
-	end
-	#find(data) returns the index of the node containing data, or nil if not found.
-	def find(data)
-		first = @head
-		index_pos = nil
-		count = 0
-		while count < size do
-			if first.value === data
-			 index_pos = count
-			end
-			first = first.next_node
-			count = count + 1
-		end
-		index_pos		
-	end
-	#to_s represent your LinkedList objects as strings, so you can print them out and preview them in the console. The format should be: ( data ) -> ( data ) -> ( data ) -> nil
-	def to_s
-		first = @head
-		size.times do 
-			print("( #{first.value} ) -> ")
-			first = first.next_node
-		end	
-		print(" nil ")	
-	end
+  def append(value)
+    # adds a new node to the end of the LinkedList
+    new_node = Node.new(value)
+    if @head
+      @tail.next = new_node # address
+    else
+      @head = new_node
+    end
+    @size += 1
+    @tail = new_node
+  end
 
-	### Extra Credit
+  def prepend(value)
+    # adds a new node to the start of the LinkedList
+    new_node = Node.new(value)
+    if @head
+      new_node.next = @head
+    else
+      @tail = new_node
+    end
+    @head = new_node
+    @size += 1
+  end
 
-	#insert_at(index) that inserts the node at the given index
-	def insert_at(indexPos)
-		node = at(indexPos)
-		if node
-			before_node = at(indexPos - 1)
-			new_node = Node.new
-			new_node.next_node = node
-			before_node.next_node = new_node
-		end		
-	end
-	#remove_at(index) that removes the node at the given index. (You will need to update the links of your nodes in the list when you remove a node.)
-	def remove_at(indexPos)	
-		node = at(indexPos)
-		if node
-			before_node = at(indexPos - 1)
-			before_node.next_node = node.next_node
-		end		
-	end
+  def at(index)
+    # returns node at given index
+    if index >= @size || index < 0
+      nil
+    else
+      current_node = @head
+      index.times { current_node = current_node.next }
+      current_node
+    end
+  end
+
+  def pop
+    # removes the last node in the list
+    return if size.zero? # guard code
+
+    current_node = @head
+    current_node = current_node.next until current_node.next == @tail
+    @tail = current_node
+    pop = current_node.next
+    current_node.next = nil
+    @size -= 1
+    pop
+  end
+
+  def contains?(value)
+    # checks if passed value is in the list
+    current_node = @head
+    until current_node.value == value || current_node.next.nil?
+      current_node = current_node.next
+    end
+    current_node.value == value
+  end
+
+  def find(value)
+    # returns index of node containing data
+    current_node = @head
+    index = 0
+    until current_node.value == value || current_node.next.nil?
+      current_node = current_node.next
+      index += 1
+    end
+    current_node.value == value ? index : nil
+  end
+
+  def to_s
+    # represent node list as a String
+    current_node = @head
+    str = current_node.value
+    until current_node.next.nil?
+      current_node = current_node.next
+      str = str + ' ' + current_node.value
+    end
+    str
+  end
 end
 
-my_list = LinkedList.new
-my_list.append("should be the tail")
-my_list.prepend("first head. should be the 3 element at index 2")
-puts my_list.head.value
-puts my_list.head.next_node.value
-puts my_list.tail.value
-puts my_list.tail.next_node
-my_list.prepend("this is the new head")
-puts my_list.head.value
-puts my_list.head.next_node.value
-puts my_list.head.next_node.next_node.value
-my_list.prepend("this is the newest head")
-puts my_list.tail.value
-puts my_list.size
-puts my_list.at(2).value
-puts my_list.contains?("this is the new head")
-puts my_list.find("this is the new head")
-my_list.pop
-puts my_list.size
-puts my_list.at(2).value
-puts my_list.tail.value
-puts my_list.to_s
+# Contains a link to the next node
+class Node
+  attr_accessor :value, :next
+  # looks for global varialbes @value and @next
+  def initialize(value)
+    @value = value
+    @next = nil
+  end
+end
 
+list = LinkedList.new
 
-
-
+list.append('item1')
+list.append('item2')
+list.append('item3')
+list.append('item4')
+system 'clear'
+puts 'linked list'
+puts list.to_s
+puts 'head value:'
+puts list.head.value
+puts 'tail value:'
+puts list.tail.value
+puts 'prepend item'
+list.prepend('item0')
+puts 'head value:'
+puts list.head.value
+puts 'pop item'
+puts 'removed:'
+puts list.pop.value
+puts 'tail value:'
+puts list.tail.value
+puts 'linked list size:'
+puts list.size
+puts 'node at index (1):'
+puts list.at(1).value
+puts 'node at index (5):'
+puts list.at(5)
+puts "contains? 'item5'"
+puts list.contains?('item5')
+puts "contains? 'item1'"
+puts list.contains?('item1')
+puts "find index of 'item4'"
+puts list.find('item4')
+puts "find index of 'item1'"
+puts list.find('item1')
+puts 'linked list'
+puts list.to_s
